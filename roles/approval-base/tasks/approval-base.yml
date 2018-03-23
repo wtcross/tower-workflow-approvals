@@ -1,0 +1,145 @@
+---
+- name: Create an organization to contain all approval gate resources
+  command: >
+    tower-cli organization create
+    --format json
+    --name "Workflow Approvals"
+  register: create_org
+  changed_when: (create_org.stdout | from_json).changed
+- name: Ensure a project exists that pulls from the tower-workflow-approvals repo
+  command: >
+    tower-cli project create
+    --format json
+    --force-on-exists
+    --name "Workflow Approvals"
+    --organization "Workflow Approvals"
+    --scm-type git
+    --scm-url "https://github.com/wtcross/tower-workflow-approvals.git"
+    --scm-branch master
+    --scm-update-on-launch true
+  register: create_project
+  changed_when: (create_project.stdout | from_json).changed
+- name: Create an inventory for approvals
+  command: >
+    tower-cli inventory create
+    --format json
+    --force-on-exists
+    --name "Workflow Approvals"
+    --organization "Workflow Approvals"
+  register: create_inventory
+  changed_when: (create_inventory.stdout | from_json).changed
+- name: Create an Ansible Tower credential for workflow administration
+  command: >
+    tower-cli credential create
+    --format json
+    --force-on-exists
+    --name "Workflow Approval Admin"
+    --organization "Workflow Approvals"
+    --credential-type "Ansible Tower"
+    --inputs "{{ inputs | from_yaml | to_yaml }}"
+  no_log: yes
+  vars:
+    inputs: |
+      host: https://localhost
+      {{ lookup('pipe', 'tower-cli config username') }}
+      {{ lookup('pipe', 'tower-cli config password') }}
+  register: create_admin_tower_cred
+  changed_when: (create_admin_tower_cred.stdout | from_json).changed
+- name: Create an empty machine credential for all approval request job templates
+  command: >
+    tower-cli credential create
+    --format json
+    --force-on-exists
+    --name "Workflow Approvals"
+    --organization "Workflow Approvals"
+    --credential-type Machine
+  register: create_machine_cred
+  changed_when: (create_machine_cred.stdout | from_json).changed
+- name: Create a Workflow Approval Gate credential type
+  command: >
+    tower-cli credential_type create
+    --format json
+    --force-on-exists
+    --kind cloud
+    --name "Workflow Approval Gate"
+    --description "Information needed to automate workflow approvals"
+    --inputs "{{ inputs | to_yaml }}"
+    --injectors "{{ injectors | to_yaml }}"
+  vars:
+    inputs:
+      fields:
+        - help_text: The Ansible Tower base URL to authenticate with.
+          type: string
+          id: host
+          label: Ansible Tower Hostname
+        - type: string
+          id: username
+          label: Username
+        - secret: true
+          type: string
+          id: password
+          label: Password
+        - type: string
+          id: approval_gate_name
+          label: Approval Gate Name
+    injectors:
+      env:
+        TOWER_USERNAME: "{{ '{{' }} username {{ '}}' }}"
+        TOWER_HOST: "{{ '{{' }} host {{ '}}' }}"
+        TOWER_PASSWORD: "{{ '{{' }} password {{ '}}' }}"
+      extra_vars:
+        approval_organization: Workflow Approvals
+        approval_project: Workflow Approvals
+        approval_inventory: Workflow Approvals
+        approval_machine_credential: Workflow Approvals
+        approval_gate_tower_credential: Approval Gate / {{ '{{' }} approval_gate_name {{ '}}' }}
+        approval_gate_team: Approval Gate / {{ '{{' }} approval_gate_name {{ '}}' }}
+        approval_gate_name: "{{ '{{' }} approval_gate_name {{ '}}' }}"
+  register: create_gate_cred_type
+  changed_when: (create_gate_cred_type.stdout | from_json).changed
+- name: Create a job template for destroying approvals
+  command: >
+    tower-cli job_template create
+    --format json
+    --force-on-exists
+    --name "Destroy Approval Gate Request"
+    --project "Workflow Approvals"
+    --playbook destroy-approval.yml
+    --inventory "Workflow Approvals"
+    --credential "Workflow Approvals"
+    --survey-spec '{{ survey_spec | to_json }}'
+    --survey-enabled true
+    --job-type run
+  vars:
+    survey_spec:
+      name: ""
+      description: ""
+      spec:
+        - question_description: What is the ID of the approval job template to destroy?
+          min: null
+          default: no
+          max: null
+          required: true
+          choices: ""
+          variable: approval_job_template_id
+          question_name: Approval Job Template ID
+          type: integer
+        - question_description: What is the ID of the current running approval job?
+          min: null
+          default: no
+          max: null
+          required: true
+          choices: ""
+          variable: approval_job_id
+          question_name: Approval Job ID
+          type: integer
+  register: create_destroy_jt
+  changed_when: (create_destroy_jt.stdout | from_json).changed
+- name: Attach the tower credential
+  command: >
+    tower-cli job_template associate_credential
+    --format json
+    --job-template "Destroy Approval Gate Request"
+    --credential "Workflow Approval Admin"
+  register: attach_admin_cred
+  changed_when: (attach_admin_cred.stdout | from_json).changed
