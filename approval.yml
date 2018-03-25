@@ -1,3 +1,5 @@
+# approval.yml
+#
 # This playbook automates steps to be taken when an approver either approves
 # or denies a request to pass through an approval gate.
 #
@@ -37,7 +39,7 @@
       command: >
         tower-cli job launch
         --format json
-        --job-template "Destroy Approval Gate Request"
+        --job-template "Destroy Approval Request"
         --extra-vars "{{ extra_vars | to_yaml }}"
       vars:
         extra_vars:

@@ -10,7 +10,6 @@
   command: >
     tower-cli project create
     --format json
-    --force-on-exists
     --name "Workflow Approvals"
     --organization "Workflow Approvals"
     --scm-type git
@@ -102,9 +101,9 @@
     tower-cli job_template create
     --format json
     --force-on-exists
-    --name "Destroy Approval Gate Request"
+    --name "Destroy Approval Request"
     --project "Workflow Approvals"
-    --playbook destroy-approval.yml
+    --playbook destroy-approval-request.yml
     --inventory "Workflow Approvals"
     --credential "Workflow Approvals"
     --survey-spec '{{ survey_spec | to_json }}'
@@ -139,7 +138,42 @@
   command: >
     tower-cli job_template associate_credential
     --format json
-    --job-template "Destroy Approval Gate Request"
+    --job-template "Destroy Approval Request"
     --credential "Workflow Approval Admin"
   register: attach_admin_cred
   changed_when: (attach_admin_cred.stdout | from_json).changed
+- name: Create a job template for creating approval gates
+  command: >
+    tower-cli job_template create
+    --format json
+    --force-on-exists
+    --name "Create Approval Gate"
+    --project "Workflow Approvals"
+    --playbook create-approval-gate.yml
+    --inventory "Workflow Approvals"
+    --credential "Workflow Approvals"
+    --survey-spec '{{ survey_spec | to_json }}'
+    --survey-enabled true
+    --job-type run
+  vars:
+    survey_spec:
+      name: ""
+      description: ""
+      spec:
+        - question_description: >
+            The name to use for this approval gate.
+            Keep in mind it will be used when creating resources in Tower.
+          min: null
+          default: no
+          max: null
+          required: true
+          choices: ""
+          variable: approval_gate_name
+          question_name: Approval Gate Name
+          type: integer
+- name: Attach the tower credential
+  command: >
+    tower-cli job_template associate_credential
+    --format json
+    --job-template "Create Approval Gate"
+    --credential "Workflow Approval Admin"

@@ -41,7 +41,7 @@ that job templates can leverage them.
 
 ### Adding a Gate
 1. Ensure `tower-cli` is configurd with the system administrator user created for workflow approvals.
-2. Run `ansible-playbook configure-approval-gate.yml -e approval_gate_name="Approval Required"`
+2. Run `ansible-playbook create-approval-gate.yml -e approval_gate_name="Approval Required"`
 
 This will configure Tower with all necessary resources to enable creating an approval gate job template.
 To create an approval gate job template perform the following:

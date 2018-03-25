@@ -1,3 +1,5 @@
+# approval-gate.yml
+#
 # This playbook automates steps to be taken at a workflow approval gate.
 #
 # See documentation for the `approval-gate` role for more information on

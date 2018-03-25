@@ -21,8 +21,6 @@
   changed_when: False
 - set_fact:
     approval_request_job_extra_vars: "{{ (approval_request_job.stdout | from_json).extra_vars | from_json | to_yaml }}"
-- debug:
-
 - name: Create the approval job template
   command: >
     tower-cli job_template create
