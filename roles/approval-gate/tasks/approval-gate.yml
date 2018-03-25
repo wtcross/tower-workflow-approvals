@@ -79,7 +79,30 @@
     --credential "{{ approval_gate_tower_credential }}"
   register: attach_tower_cred
   changed_when: (attach_tower_cred.stdout | from_json).changed
-# - name: Add labels to the approval job template
+- name: Associate the approvals label to the job template
+  command: >
+    tower-cli job_template associate_label
+    --format json
+    --job_template "{{ approval_job_template_name }}"
+    --label "Workflow Approvals"
+  register: assoc_approvals_label_to_request_jt
+  changed_when: (assoc_approvals_label_to_request_jt.stdout | from_json).changed
+- name: Associate the approval request label to the job template
+  command: >
+    tower-cli job_template associate_label
+    --format json
+    --job_template "{{ approval_job_template_name }}"
+    --label "Approval Request"
+  register: assoc_approvals_label_to_request_jt
+  changed_when: (assoc_approvals_label_to_request_jt.stdout | from_json).changed
+- name: Associate this gate's label to the job template
+  command: >
+    tower-cli job_template associate_label
+    --format json
+    --job_template "{{ approval_job_template_name }}"
+    --label "{{ approval_gate_name }} Gate"
+  register: assoc_approvals_label_to_request_jt
+  changed_when: (assoc_approvals_label_to_request_jt.stdout | from_json).changed
 # - name: schedule the approval job to run periodically to remind of approval existing
 - name: Add permission to execute the job template to the approver team
   command: >

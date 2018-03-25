@@ -62,3 +62,12 @@
     --type use
   register: grant_team_project_permission
   changed_when: (grant_team_project_permission.stdout | from_json).changed
+- name: Create a label for this gate
+  command: >
+    tower-cli label create
+    --format json
+    --force-on-exists
+    --name "{{ approval_gate_name }} Gate"
+    --organization "Workflow Approvals"
+  register: create_gate_label
+  changed_when: (create_gate_label.stdout | from_json).changed
