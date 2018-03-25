@@ -163,14 +163,14 @@
         - question_description: >
             The name to use for this approval gate.
             Keep in mind it will be used when creating resources in Tower.
-          min: null
+          min: 2
+          max: 50
           default: no
-          max: null
           required: true
           choices: ""
           variable: approval_gate_name
           question_name: Approval Gate Name
-          type: integer
+          type: text
 - name: Attach the tower credential
   command: >
     tower-cli job_template associate_credential
