@@ -69,40 +69,30 @@
           variable: explanation
           question_name: Explanation
           type: textarea
-  register: approval_job_template
-  changed_when: (approval_job_template.stdout | from_json).changed
 - name: Attach the tower credential
   command: >
     tower-cli job_template associate_credential
     --format json
     --job-template "{{ approval_job_template_name }}"
     --credential "{{ approval_gate_tower_credential }}"
-  register: attach_tower_cred
-  changed_when: (attach_tower_cred.stdout | from_json).changed
 - name: Associate the approvals label to the job template
   command: >
     tower-cli job_template associate_label
     --format json
     --job_template "{{ approval_job_template_name }}"
     --label "Workflow Approvals"
-  register: assoc_approvals_label_to_request_jt
-  changed_when: (assoc_approvals_label_to_request_jt.stdout | from_json).changed
 - name: Associate the approval request label to the job template
   command: >
     tower-cli job_template associate_label
     --format json
     --job_template "{{ approval_job_template_name }}"
     --label "Approval Request"
-  register: assoc_approvals_label_to_request_jt
-  changed_when: (assoc_approvals_label_to_request_jt.stdout | from_json).changed
 - name: Associate this gate's label to the job template
   command: >
     tower-cli job_template associate_label
     --format json
     --job_template "{{ approval_job_template_name }}"
     --label "{{ approval_gate_name }} Gate"
-  register: assoc_approvals_label_to_request_jt
-  changed_when: (assoc_approvals_label_to_request_jt.stdout | from_json).changed
 # - name: schedule the approval job to run periodically to remind of approval existing
 - name: Add permission to execute the job template to the approver team
   command: >
@@ -111,8 +101,6 @@
     --job-template "{{ approval_job_template_name }}"
     --team "{{ approval_gate_team }}"
     --type execute
-  register: grant_permission
-  changed_when: (grant_permission.stdout | from_json).changed
 - name: Send an email to the approver notifying them of this request
   debug:
     msg: "{{ requester_info.username }} is requesting to continue through the {{ approval_gate_name }} gate"

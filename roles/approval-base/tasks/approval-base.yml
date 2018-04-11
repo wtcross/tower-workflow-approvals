@@ -4,8 +4,6 @@
     tower-cli organization create
     --format json
     --name "Workflow Approvals"
-  register: create_org
-  changed_when: (create_org.stdout | from_json).changed
 - name: Create a label for all approvals related job templates
   command: >
     tower-cli label create
@@ -13,8 +11,6 @@
     --force-on-exists
     --name "Workflow Approvals"
     --organization "Workflow Approvals"
-  register: create_org_label
-  changed_when: (create_org_label.stdout | from_json).changed
 - name: Create a label for approval request job templates
   command: >
     tower-cli label create
@@ -22,8 +18,6 @@
     --force-on-exists
     --name "Approval Request"
     --organization "Workflow Approvals"
-  register: create_request_label
-  changed_when: (create_request_label.stdout | from_json).changed
 - name: Ensure a project exists that pulls from the tower-workflow-approvals repo
   command: >
     tower-cli project create
@@ -34,8 +28,6 @@
     --scm-url "https://github.com/wtcross/tower-workflow-approvals.git"
     --scm-branch master
     --scm-update-on-launch true
-  register: create_project
-  changed_when: (create_project.stdout | from_json).changed
 - name: Create an inventory for approvals
   command: >
     tower-cli inventory create
@@ -43,8 +35,6 @@
     --force-on-exists
     --name "Workflow Approvals"
     --organization "Workflow Approvals"
-  register: create_inventory
-  changed_when: (create_inventory.stdout | from_json).changed
 - name: Create an Ansible Tower credential for workflow administration
   command: >
     tower-cli credential create
@@ -60,8 +50,6 @@
       host: https://localhost
       {{ lookup('pipe', 'tower-cli config username') }}
       {{ lookup('pipe', 'tower-cli config password') }}
-  register: create_admin_tower_cred
-  changed_when: (create_admin_tower_cred.stdout | from_json).changed
 - name: Create an empty machine credential for all approval request job templates
   command: >
     tower-cli credential create
@@ -70,8 +58,6 @@
     --name "Workflow Approvals"
     --organization "Workflow Approvals"
     --credential-type Machine
-  register: create_machine_cred
-  changed_when: (create_machine_cred.stdout | from_json).changed
 - name: Create a Workflow Approval Gate credential type
   command: >
     tower-cli credential_type create
@@ -112,8 +98,6 @@
         approval_gate_tower_credential: Approval Gate / {{ '{{' }} approval_gate_name {{ '}}' }}
         approval_gate_team: Approval Gate / {{ '{{' }} approval_gate_name {{ '}}' }}
         approval_gate_name: "{{ '{{' }} approval_gate_name {{ '}}' }}"
-  register: create_gate_cred_type
-  changed_when: (create_gate_cred_type.stdout | from_json).changed
 - name: Create a job template for destroying approvals
   command: >
     tower-cli job_template create
@@ -150,8 +134,6 @@
           variable: approval_job_id
           question_name: Approval Job ID
           type: integer
-  register: create_destroy_jt
-  changed_when: (create_destroy_jt.stdout | from_json).changed
 - name: Associate the tower credential
   command: >
     tower-cli job_template associate_credential
@@ -166,8 +148,6 @@
     --format json
     --job_template "Destroy Approval Request"
     --label "Workflow Approvals"
-  register: assoc_approvals_label_to_destroy_jt
-  changed_when: (assoc_approvals_label_to_destroy_jt.stdout | from_json).changed
 - name: Create a job template for creating approval gates
   command: >
     tower-cli job_template create
@@ -209,5 +189,3 @@
     --format json
     --job_template "Create Approval Gate"
     --label "Workflow Approvals"
-  register: asso_approvals_label_to_create_jt
-  changed_when: (asso_approvals_label_to_create_jt.stdout | from_json).changed
