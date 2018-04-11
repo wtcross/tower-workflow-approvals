@@ -11,4 +11,5 @@
   gather_facts: no
   become: no
   roles:
+    - approval-base
     - approval-gate-config
