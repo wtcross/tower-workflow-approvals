@@ -15,8 +15,6 @@
       {{ lookup('pipe', 'tower-cli config username') }}
       {{ lookup('pipe', 'tower-cli config password') }}
       approval_gate_name: {{ approval_gate_name }}
-  register: create_gate_cred
-  changed_when: (create_gate_cred.stdout | from_json).changed
 - name: Create a team that will handle approvals for this gate
   command: >
     tower-cli team create
@@ -24,8 +22,6 @@
     --force-on-exists
     --name "Approval Gate / {{ approval_gate_name }}"
     --organization "Workflow Approvals"
-  register: create_team
-  changed_when: (create_team.stdout | from_json).changed
 - name: Grant the approval gate team permission to use the approvals inventory
   command: >
     tower-cli role grant
@@ -33,8 +29,6 @@
     --inventory "Workflow Approvals"
     --team "Approval Gate / {{ approval_gate_name }}"
     --type use
-  register: grant_team_inventory_permission
-  changed_when: (grant_team_inventory_permission.stdout | from_json).changed
 - name: Grant the approval gate team permission to use the approvals credential
   command: >
     tower-cli role grant
@@ -42,8 +36,6 @@
     --credential "Approval Gate / {{ approval_gate_name }}"
     --team "Approval Gate / {{ approval_gate_name }}"
     --type use
-  register: grant_team_gate_cred_permission
-  changed_when: (grant_team_gate_cred_permission.stdout | from_json).changed
 - name: Grant the approval gate team permission to use the machine credential
   command: >
     tower-cli role grant
@@ -51,8 +43,6 @@
     --credential "Workflow Approvals"
     --team "Approval Gate / {{ approval_gate_name }}"
     --type use
-  register: grant_team_machine_cred_permission
-  changed_when: (grant_team_machine_cred_permission.stdout | from_json).changed
 - name: Grant the approval gate team permission to use the approvals project
   command: >
     tower-cli role grant
@@ -60,8 +50,6 @@
     --project "Workflow Approvals"
     --team "Approval Gate / {{ approval_gate_name }}"
     --type use
-  register: grant_team_project_permission
-  changed_when: (grant_team_project_permission.stdout | from_json).changed
 - name: Create a label for this gate
   command: >
     tower-cli label create
@@ -69,5 +57,3 @@
     --force-on-exists
     --name "{{ approval_gate_name }} Gate"
     --organization "Workflow Approvals"
-  register: create_gate_label
-  changed_when: (create_gate_label.stdout | from_json).changed
