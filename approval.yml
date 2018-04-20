@@ -26,8 +26,6 @@
         --format json
         --workflow-job-template "{{ next_workflow_template }}"
         --extra-vars "{{ approval_job_template_extra_vars }}"
-      register: launch_workflow
-      changed_when: (launch_workflow.stdout | from_json).changed
       when: approved | bool
     - name: Notify approver of action
       debug:
@@ -45,5 +43,3 @@
         extra_vars:
           approval_job_template_id: "{{ tower_job_template_id }}"
           approval_job_id: "{{ tower_job_id }}"
-      register: launch_destroy_job
-      changed_when: (launch_destroy_job.stdout | from_json).changed

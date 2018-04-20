@@ -17,5 +17,3 @@
       changed_when: False
     - name: Destroy the approval job template
       command: tower-cli job_template delete {{ approval_job_template_id }} --format json
-      register: destroy_job_template
-      changed_when: (destroy_job_template.stdout | from_json).changed
