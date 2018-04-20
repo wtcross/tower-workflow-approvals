@@ -140,8 +140,6 @@
     --format json
     --job-template "Destroy Approval Request"
     --credential "Workflow Approval Admin"
-  register: associate_admin_cred
-  changed_when: (associate_admin_cred.stdout | from_json).changed
 - name: Associate the approvals label to the job template
   command: >
     tower-cli job_template associate_label
