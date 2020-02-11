@@ -1,3 +1,5 @@
+Ansible Tower now supports approval gates for workflows! [This blog post](https://www.ansible.com/blog/how-to-add-approval-steps-to-ansible-tower-workflows) is a great place to start. I have archived this repository since the native approval gates should be used.
+
 # tower-workflow-approvals
 > An experiment for implementing workflow approval gates within Ansible Tower.
 
